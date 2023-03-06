@@ -39,14 +39,17 @@ func main() {
 	}
 
 	var (
-		output = "."
-		debug  bool
+		output  = "."
+		tempdir = ""
+		debug   bool
 	)
 	if len(os.Args) > offset+1 {
 		var (
 			fset = flag.NewFlagSet("default", flag.ExitOnError)
 			o    = fset.String("o", "", "output `directory`")
 			out  = fset.String("output", output, "output `directory`")
+			t    = fset.String("t", "", "temporary root `directory` to generate files in")
+			tmp  = fset.String("temp", "", "temporary root `directory` to generate files in")
 		)
 		fset.BoolVar(&debug, "debug", false, "Print debug information")
 
@@ -57,9 +60,15 @@ func main() {
 		if output == "" {
 			output = *out
 		}
+
+		tempdir = *t
+		if tempdir == "" {
+			tempdir = *tmp
+		}
+
 	}
 
-	gen(cmd, path, output, debug)
+	gen(cmd, path, output, tempdir, debug)
 }
 
 // help with tests
@@ -68,12 +77,16 @@ var (
 	gen   = generate
 )
 
-func generate(cmd, path, output string, debug bool) {
+func generate(cmd, path, output string, tempdir string, debug bool) {
 	var (
 		files []string
 		err   error
 		tmp   *Generator
 	)
+
+	if tempdir == "" {
+		tempdir = os.Getenv("GOA_TEMP")
+	}
 
 	if _, err = build.Import(path, ".", 0); err != nil {
 		goto fail
@@ -84,7 +97,7 @@ func generate(cmd, path, output string, debug bool) {
 		defer tmp.Remove()
 	}
 
-	if err = tmp.Write(debug); err != nil {
+	if err = tmp.Write(tempdir, debug); err != nil {
 		goto fail
 	}
 
@@ -130,7 +143,8 @@ Args:
 Flags:
   -o, -output DIRECTORY
         output directory, defaults to the current working directory
-
+  -t, -temp DIRECTORY
+		output directory for the temporary files used while generating. This can also be specified by using a GOA_TEMP environment variable. If not set, the current working directory is used.
   -debug
         Print debug information (mainly intended for Goa developers)
 

@@ -98,9 +98,15 @@ func NewGenerator(cmd string, path, output string) *Generator {
 }
 
 // Write writes the main file.
-func (g *Generator) Write(debug bool) error {
+func (g *Generator) Write(ovrTempDir string, debug bool) error {
 	var tmpDir string
-	{
+	if ovrTempDir != "" {
+		tmp, err := os.MkdirTemp(ovrTempDir, "goa")
+		if err != nil {
+			return err
+		}
+		tmpDir = tmp
+	} else {
 		wd := "."
 		if cwd, err := os.Getwd(); err != nil {
 			wd = cwd

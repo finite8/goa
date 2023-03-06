@@ -12,14 +12,14 @@ func TestCmdLine(t *testing.T) {
 		testOutput = "testOutput"
 	)
 	var (
-		usageCalled  bool
-		cmd          string
-		path, output string
-		debug        bool
+		usageCalled        bool
+		cmd                string
+		path, output, temp string
+		debug              bool
 	)
 
 	usage = func() { usageCalled = true }
-	gen = func(c string, p, o string, d bool) { cmd, path, output, debug = c, p, o, d }
+	gen = func(c string, p, o string, t string, d bool) { cmd, path, output, temp, debug = c, p, o, t, d }
 	defer func() {
 		usage = help
 		gen = generate
@@ -31,18 +31,19 @@ func TestCmdLine(t *testing.T) {
 		ExpectedCommand string
 		ExpectedPath    string
 		ExpectedOutput  string
+		ExpectedTemp    string
 		ExpectedDebug   bool
 	}{
-		"gen": {"gen " + testPkg, false, "gen", testPkg, ".", false},
+		"gen": {"gen " + testPkg, false, "gen", testPkg, ".", "", false},
 
-		"invalid":     {"invalid " + testPkg, true, "", "", ".", false},
-		"empty":       {"", true, "", "", ".", false},
-		"invalid gen": {"invalid gen" + testPkg, true, "", "", ".", false},
+		"invalid":     {"invalid " + testPkg, true, "", "", ".", "", false},
+		"empty":       {"", true, "", "", ".", "", false},
+		"invalid gen": {"invalid gen" + testPkg, true, "", "", ".", "", false},
 
-		"output":       {"gen " + testPkg + " -output " + testOutput, false, "gen", testPkg, testOutput, false},
-		"output short": {"gen " + testPkg + " -o " + testOutput, false, "gen", testPkg, testOutput, false},
+		"output":       {"gen " + testPkg + " -output " + testOutput, false, "gen", testPkg, testOutput, "", false},
+		"output short": {"gen " + testPkg + " -o " + testOutput, false, "gen", testPkg, testOutput, "", false},
 
-		"debug": {"gen " + testPkg + " -debug", false, "gen", testPkg, ".", true},
+		"debug": {"gen " + testPkg + " -debug", false, "gen", testPkg, ".", "", true},
 	}
 
 	for k, c := range cases {
@@ -53,6 +54,7 @@ func TestCmdLine(t *testing.T) {
 			cmd = ""
 			path = ""
 			output = ""
+			temp = ""
 			debug = false
 		}
 
@@ -69,6 +71,9 @@ func TestCmdLine(t *testing.T) {
 		}
 		if output != c.ExpectedOutput {
 			t.Errorf("%s: Expected output to be %s but got %s", k, c.ExpectedOutput, output)
+		}
+		if temp != c.ExpectedTemp {
+			t.Errorf("%s: Expected temp to be %s but got %s", k, c.ExpectedTemp, temp)
 		}
 		if debug != c.ExpectedDebug {
 			t.Errorf("%s: Expected debug to be %v but got %v", k, c.ExpectedDebug, debug)
