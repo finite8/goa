@@ -49,7 +49,7 @@ func main() {
 			o    = fset.String("o", "", "output `directory`")
 			out  = fset.String("output", output, "output `directory`")
 			t    = fset.String("t", "", "temporary root `directory` to generate files in")
-			tmp  = fset.String("temp", "", "temporary root `directory` to generate files in")
+			tmp  = fset.String("temp", os.Getenv("GOA_GENTEMP"), "temporary root `directory` to generate files in (will also use optional GOA_GENTEMP env variable if not set explicitly)")
 		)
 		fset.BoolVar(&debug, "debug", false, "Print debug information")
 
